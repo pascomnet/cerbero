@@ -828,8 +828,9 @@ class Config (object):
         # For backwards-compatibility, keep the old value for setups that
         # define their own home_dir inside which all cerbero work must be
         # contained; f.ex. ci.gstreamer.net
-        if self.home_dir != self._default_home_dir():
-            return os.path.join(self.home_dir, 'sources', 'local')
+        # CL-1842 keep everything in the cerbero directory and don't pullute user home dir
+        #if self.home_dir != self._default_home_dir():
+        return os.path.join(self.home_dir, 'sources', 'local')
         # Default value should be in a user-specific location so that it can
         # be shared across all cerbero directories and invocations
         if self.platform == Platform.WINDOWS and 'USERPROFILE' in os.environ:
