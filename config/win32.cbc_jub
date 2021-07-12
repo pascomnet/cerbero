@@ -1,0 +1,4 @@
+from cerbero.config import Architecture
+target_arch = Architecture.X86
+
+home_dir='C:/Dev/clientenv/gstreamer/build'
