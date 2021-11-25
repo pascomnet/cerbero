@@ -5,7 +5,7 @@ class Recipe(custom.GStreamer):
     name = 'gst-plugins-bad-1.0'
     btype = BuildType.MESON
     licenses = [{License.LGPLv2Plus: None, License.BSD_like: ['ext/sctp/usrsctp/LICENSE.md']}]
-    tarball_checksum = '82d210bbfb0ecbff2121c52704e2b81660503235c54d6f4581786134137170b1'
+    tarball_checksum = '5382f98a9af2c92e5c0ca4fcb3911025cafd9f89b3142b206eb7b92b812e0979'
     # Explicitly enable plugins that we provide dependencies for to ensure that
     # we error out if they weren't found.
     meson_options = {# enabled plugins
@@ -543,6 +543,8 @@ class Recipe(custom.GStreamer):
             self.disable_plugin('ladspa', 'effects', dep='ladspa')
             self.disable_plugin('mms', 'net_restricted', option='libmms', dep='libmms')
             self.disable_plugin('openjpeg', 'codecs', dep='openjpeg')
+            # https://gitlab.freedesktop.org/gstreamer/gst-plugins-bad/-/merge_requests/2545
+            self.patches = [self.name + '/0001-meson-Fix-build-with-Dopenjpeg-disabled.patch']
             self.disable_plugin('rtmp', 'net_restricted', option='rtmp', dep='librtmp')
             self.disable_plugin('sbc', 'codecs', dep='sbc')
             self.disable_plugin('spandsp', 'codecs', dep='spandsp')
