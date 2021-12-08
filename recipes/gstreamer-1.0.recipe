@@ -7,6 +7,8 @@ class Recipe(custom.GStreamer):
     tarball_checksum = '906d7d4bf92f941586c0cbce717d9cad6aac36994e16fa6f2f153e07e3221bca'
     deps = ['glib']
     bash_completions = ['gst-inspect-1.0', 'gst-launch-1.0']
+    remotes = {'origin': 'https://gitlab.freedesktop.org/ystreet/gstreamer.git'}
+    commit = 'origin/webrtc-simulcast'
 
     files_bins = ['gst-inspect-1.0',
                   'gst-typefind-1.0',
