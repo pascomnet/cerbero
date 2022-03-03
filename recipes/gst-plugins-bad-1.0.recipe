@@ -67,7 +67,7 @@ class Recipe(custom.GStreamer):
                      'neon': 'disabled',
                      'openal': 'disabled',
                      'opencv': 'disabled',
-                     'qsv': 'disabled',
+                     # 'qsv': 'disabled',
                      'sndfile': 'disabled',
                      'teletext': 'disabled',
                      'voamrwbenc': 'disabled',
@@ -477,7 +477,7 @@ class Recipe(custom.GStreamer):
 
         # MediaFoundation and DirectShow can only be built with MSVC
         self.enable_plugin('mediafoundation', 'sys', 'visualstudio')
-        self.enable_plugin('directshow', 'sys', 'visualstudio')
+        # self.enable_plugin('directshow', 'sys', 'visualstudio')
 
         if self.config.target_platform == Platform.WINDOWS:
             self.meson_options['wasapi2'] = 'disabled'
