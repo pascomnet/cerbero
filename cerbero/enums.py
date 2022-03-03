@@ -20,7 +20,7 @@ from cerbero.errors import FatalError
 
 
 # Safest place to define this since this file imports very few modules
-CERBERO_VERSION = '1.19.3.1'
+CERBERO_VERSION = '1.21.0.1'
 
 class Platform:
     ''' Enumeration of supported platforms '''
@@ -142,6 +142,7 @@ class DistroVersion:
     OS_X_MOJAVE = 'osx_mojave'
     OS_X_CATALINA = 'osx_catalina'
     OS_X_BIG_SUR = 'osx_big_sur'
+    # further osx versions are generated automatically
     IOS_8_0 = 'ios_08_0'
     IOS_8_1 = 'ios_08_1'
     IOS_8_2 = 'ios_08_2'

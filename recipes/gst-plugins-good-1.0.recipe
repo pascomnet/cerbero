@@ -3,16 +3,14 @@
 class Recipe(custom.GStreamer):
     name = 'gst-plugins-good-1.0'
     btype = BuildType.MESON
-    #remotes = {'origin': 'https://gitlab.freedesktop.org/ystreet/gst-plugins-good.git'}
-    #commit = 'origin/twcc-crasher-fixes'
-    tarball_checksum = '79ea32a77fa47e6596530e38113bf97c113fd95658087d9a91ffb8af47d11d07'
+    tarball_checksum = '2d119c15ab8c9e79f8cd3c6bf582ff7a050b28ccae52ab4865e1a1464991659c'
     meson_options = {# enabled plugins
                      'cairo': 'enabled',
                      'dv': 'enabled',
                      'flac': 'enabled',
                      'gdk-pixbuf': 'enabled',
                      'jpeg': 'enabled',
-                     'lame': 'enabled', 
+                     'lame': 'enabled',
                      'mpg123': 'enabled',
                      'png': 'enabled',
                      'soup': 'enabled',
@@ -251,10 +249,6 @@ class Recipe(custom.GStreamer):
         if can_enable_qt5:
             self.enable_plugin('qmlgl', 'qt5', 'qt5', option='qt5')
 
-        # Recipes that need autoreconf hang on the Windows CI
-        if self.config.platform == Platform.WINDOWS:
-            self.disable_plugin('wavpack', 'codecs', dep='wavpack')
-
         if self.using_msvc():
             # plugin is C++, library is Autotools
             self.disable_plugin('taglib', 'codecs', dep='taglib')
@@ -272,6 +266,7 @@ class Recipe(custom.GStreamer):
             self.disable_plugin('png', 'codecs', dep='libpng')
             self.disable_plugin('soup', 'net', dep='libsoup')
             self.disable_plugin('speex', 'codecs', dep='speex')
+            self.disable_plugin('wavpack', 'codecs', dep='wavpack')
 
         if self.config.variants.nodebug:
             self.append_env('CFLAGS', '-DGST_LEVEL_MAX=GST_LEVEL_FIXME')

@@ -9,7 +9,7 @@ class Recipe(custom.GStreamer):
       licenses = [{License.LGPLv2Plus: None, License.BSD_like: ['ext/sctp/usrsctp/LICENSE.md']}]
     else:
       licenses = [{License.LGPLv2Plus: None, License.BSD_like: ['subprojects/gst-plugins-bad/ext/sctp/usrsctp/LICENSE.md']}]
-    tarball_checksum = '50193a23b13713ccb32ee5d1852faeeaed29b91f8398285acdfd522fa3e16835'
+    tarball_checksum = '015b8d4d9a395ebf444d40876867a2034dd3304b3ad48bc3a0dd0c1ee71dc11d'
     # Explicitly enable plugins that we provide dependencies for to ensure that
     # we error out if they weren't found.
     meson_options = {'gpl': 'enabled',
@@ -67,6 +67,7 @@ class Recipe(custom.GStreamer):
                      'neon': 'disabled',
                      'openal': 'disabled',
                      'opencv': 'disabled',
+                     'qsv': 'disabled',
                      'sndfile': 'disabled',
                      'teletext': 'disabled',
                      'voamrwbenc': 'disabled',
@@ -474,8 +475,9 @@ class Recipe(custom.GStreamer):
         self.enable_plugin('msdk', 'codecs', 'intelmsdk')
         self.enable_plugin('va', 'codecs', 'vaapi')
 
-        # MediaFoundation can only be built with MSVC
+        # MediaFoundation and DirectShow can only be built with MSVC
         self.enable_plugin('mediafoundation', 'sys', 'visualstudio')
+        self.enable_plugin('directshow', 'sys', 'visualstudio')
 
         if self.config.target_platform == Platform.WINDOWS:
             self.meson_options['wasapi2'] = 'disabled'
@@ -502,6 +504,8 @@ class Recipe(custom.GStreamer):
 
             if self.meson_options['d3d11'] == 'enabled':
                 self.files_libs += ['libgstd3d11-1.0']
+                # qsv depends on d3d11
+                self.enable_plugin('qsv', 'codecs')
 
         if self.config.target_platform in (Platform.LINUX, Platform.DARWIN, Platform.IOS):
             self.meson_options['shm'] = 'enabled'
@@ -512,8 +516,12 @@ class Recipe(custom.GStreamer):
         if self.config.target_platform in (Platform.ANDROID):
             self.deps += ['vulkan-android']
 
+        # TODO: Vulkan support on Linux and Windows
+        # No MoltenVK available for iOS x86_64
+        # Disabled on macOS ARM64 due to https://gitlab.freedesktop.org/gstreamer/cerbero/-/issues/361
         if self.config.target_platform not in (Platform.DARWIN, Platform.IOS, Platform.ANDROID) or \
-                (self.config.target_platform == Platform.IOS and self.config.target_arch != Architecture.ARM64):
+                (self.config.target_platform == Platform.IOS and self.config.target_arch != Architecture.ARM64) or \
+                (self.config.target_platform == Platform.DARWIN and self.config.target_arch == Architecture.ARM64):
             self.disable_plugin('vulkan', 'vulkan', library_name='vulkan')
 
         if self.config.target_platform in (Platform.ANDROID, Platform.IOS):
@@ -534,6 +542,7 @@ class Recipe(custom.GStreamer):
             self.disable_plugin('d3d', 'sys', option='d3dvideosink')
             self.disable_plugin('decklink', 'sys')
             self.disable_plugin('directsoundsrc', 'capture', option='directsound')
+            self.disable_plugin('directshow', 'sys')
             self.disable_plugin('wasapi', 'sys')
             self.disable_plugin('winscreencap', 'capture')
             self.disable_plugin('winks', 'capture')
@@ -553,6 +562,8 @@ class Recipe(custom.GStreamer):
             self.disable_plugin('rsvg', 'codecs', dep='librsvg')
             self.disable_plugin('voaacenc', 'codecs_restricted', dep='vo-aacenc')
             self.disable_plugin('zbar', 'codecs', dep='zbar')
+            # Not tested, and it needs some work on libmfx dispatcher build for UWP
+            self.disable_plugin('qsv', 'codecs')
 
         if self.config.variants.nodebug:
             self.append_env('CFLAGS', '-DGST_LEVEL_MAX=GST_LEVEL_FIXME')

@@ -247,7 +247,7 @@ Terminating.''', file=sys.stderr)
                 distro_version = DistroVersion.UBUNTU_DISCO
             elif distro_version in ['eoan']:
                 distro_version = DistroVersion.UBUNTU_EOAN
-            elif distro_version in ['focal'] or (distro_version[0] == 'u' and d[1].startswith('20.')):
+            elif distro_version in ['focal'] or (distro_version.startswith('u') and d[1].startswith('20.')):
                 distro_version = DistroVersion.UBUNTU_FOCAL
             elif d[1].startswith('6.'):
                 distro_version = DistroVersion.DEBIAN_SQUEEZE
@@ -259,7 +259,7 @@ Terminating.''', file=sys.stderr)
                 distro_version = DistroVersion.DEBIAN_STRETCH
             elif d[1].startswith('10.') or d[1].startswith('buster'):
                 distro_version = DistroVersion.DEBIAN_BUSTER
-            elif d[1].startswith('11.') or d[1].startswith('bullseye'):
+            elif d[1].startswith('11') or d[2].startswith('bullseye'):
                 distro_version = DistroVersion.DEBIAN_BULLSEYE
             elif d[1] == 'unstable' and d[2] == 'sid':
                 distro_version = DistroVersion.DEBIAN_SID
@@ -267,7 +267,7 @@ Terminating.''', file=sys.stderr)
                 distro_version = "debian_{number:02d}_{name}".format(number=int(d[1]), name=d[2])
             else:
                 raise FatalError("Distribution '%s' not supported" % str(d))
-        elif d[0] in ['RedHat', 'Fedora', 'CentOS', 'Red Hat Enterprise Linux Server', 'CentOS Linux', 'Amazon Linux']:
+        elif d[0] in ['RedHat', 'Fedora', 'Fedora Linux', 'CentOS', 'Red Hat Enterprise Linux Server', 'CentOS Linux', 'Amazon Linux']:
             distro = Distro.REDHAT
             if d[1] == '16':
                 distro_version = DistroVersion.FEDORA_16
@@ -303,7 +303,7 @@ Terminating.''', file=sys.stderr)
                 distro_version = DistroVersion.FEDORA_31
             elif d[1] == '32':
                 distro_version = DistroVersion.FEDORA_32
-            elif d[0] == 'Fedora':
+            elif d[0].startswith('Fedora'):
                 # str(int()) is for ensuring that the fedora version is
                 # actually a number
                 distro_version = 'fedora_' + str(int(d[1]))
@@ -378,7 +378,7 @@ Terminating.''', file=sys.stderr)
         elif ver.startswith('10.8'):
             distro_version = DistroVersion.OS_X_MOUNTAIN_LION
         else:
-            raise FatalError("Mac version %s not supported" % ver)
+            distro_version = "osx_%s" % ver
 
     num_of_cpus = determine_num_of_cpus()
 

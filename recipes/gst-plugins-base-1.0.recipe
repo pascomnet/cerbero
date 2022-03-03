@@ -4,7 +4,7 @@
 class Recipe(custom.GStreamer):
     name = 'gst-plugins-base-1.0'
     btype = BuildType.MESON
-    tarball_checksum = 'e277f198623a26c1b0a1e19734656392e9368bebf3677cd94262a1316a960827'
+    tarball_checksum = '4cb66fccf730b1037e6533862c2128990912a6db4e5bbd14e0ef914450eb4c7c'
     meson_options = {# enabled plugins
                      'gl': 'enabled',
                      'gl-graphene': 'enabled',
@@ -193,7 +193,7 @@ class Recipe(custom.GStreamer):
             self.append_env('OBJCFLAGS', '-DGSTREAMER_GLIB_COCOA_NSAPPLICATION=1')
 
         self.enable_plugin('cdparanoia', 'sys', 'cdparanoia', dep='cdparanoia')
-        self.enable_plugin('ximagesink', 'sys', 'x11')
+        self.enable_plugin('ximagesink', 'sys', 'x11', option='x11')
         self.enable_plugin('xvimagesink', 'sys', 'x11', option='xvideo')
         self.enable_plugin('alsa', 'sys', 'alsa')
 

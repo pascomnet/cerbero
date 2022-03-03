@@ -237,6 +237,7 @@ class Recipe(FilesProvider, metaclass=MetaRecipe):
     platform_deps = None
     runtime_dep = False
     bash_completions = None
+    skip_steps = None
 
     # Internal properties
     force = False
@@ -271,6 +272,13 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
             config.bash_completions.update(self.bash_completions)
             self.deps.append('bash-completion')
         self.platform_deps = self.platform_deps or {}
+
+        self.skip_steps = self.skip_steps or []
+        allowed_skip = {BuildSteps.RELOCATE_OSX_LIBRARIES, BuildSteps.CODE_SIGN}
+        bad_skip = set(self.skip_steps) - allowed_skip
+        if bad_skip:
+            raise FatalError(f"Can only skip steps {allowed_skip}, not {bad_skip}")
+
         self._steps = self._default_steps[:]
         if self.config.target_platform == Platform.WINDOWS:
             self._steps.append(BuildSteps.GEN_LIBFILES)
@@ -279,6 +287,7 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
         if self.config.target_platform == Platform.DARWIN and \
                 self.config.prefix == self.config.build_tools_prefix:
             self._steps.append(BuildSteps.CODE_SIGN)
+
         FilesProvider.__init__(self, config)
         try:
             self.stype.__init__(self)
@@ -309,7 +318,7 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
     def prepare(self):
         '''
         Can be overriden by subclasess to modify the recipe in function of
-        the configuration, like modifying steps for a given platform
+        the configuration
         '''
         pass
 
@@ -402,6 +411,8 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
             'gstvalidate-1.0' : 'gst-validate-1.0',
             'gstvalidate-default-overrides-1.0' : None,
             'ges-1.0' : 'gst-editing-services-1.0',
+            'gstd3d11-1.0': None,
+            'gstwinrt-1.0': None,
         }
         generated_libs = []
 
@@ -479,8 +490,9 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
         '''
         Make OSX libraries relocatable
         '''
-        relocator = OSXRelocator(self.config.prefix, self.config.prefix, True,
-                logfile=self.logfile)
+        if BuildSteps.RELOCATE_OSX_LIBRARIES in self.skip_steps:
+            return
+
         def get_real_path(fp):
             return os.path.realpath(os.path.join(self.config.prefix, fp))
 
@@ -488,6 +500,8 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
             return fp.split('/')[0] in ['lib', 'bin', 'libexec'] and \
                     os.path.splitext(fp)[1] not in ['.a', '.pc', '.la']
 
+        relocator = OSXRelocator(self.config.prefix, self.config.prefix, True,
+                logfile=self.logfile)
         # Only relocate files are that are potentially relocatable and
         # remove duplicates by symbolic links so we relocate libs only
         # once.
@@ -499,6 +513,9 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
         '''
         Codesign OSX build-tools binaries
         '''
+        if BuildSteps.CODE_SIGN in self.skip_steps:
+            return
+
         def get_real_path(fp):
             return os.path.realpath(os.path.join(self.config.prefix, fp))
 
@@ -755,10 +772,7 @@ SOFTWARE LICENSE COMPLIANCE.\n\n'''
     def steps(self):
         return self._steps
 
-    def _remove_steps(self, steps):
-        self._steps = [x for x in self._steps if x not in steps]
-
-    def get_for_arch (self, arch, name):
+    def get_for_arch(self, arch, name):
         return getattr (self, name)
 
 
