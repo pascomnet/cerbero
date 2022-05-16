@@ -31,12 +31,6 @@ class GStreamer(recipe.Recipe):
         stype = SourceType.GIT
         remotes = {'origin': 'https://github.com/pascomnet/gstreamer.git'}
         commit = 'origin/webrtc-simulcast'
-        # if int(version.split('.')[1]) % 2 == 0:
-        #     # Even version, use the specific branch
-        #     commit = 'origin/' + '.'.join(version.split('.')[0:2])
-        # else:
-        #     # Odd version, use git main
-        #     commit = 'origin/main'
     else:
         stype = SourceType.TARBALL
         url = 'https://gstreamer.freedesktop.org/src/%(name)s/%(name)s-%(version)s.tar.xz'
