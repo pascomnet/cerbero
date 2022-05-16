@@ -4,11 +4,15 @@ from cerbero.tools.libtool import LibtoolLibrary
 
 class Recipe(recipe.Recipe):
     name = 'harfbuzz'
-    version = '2.6.7'
-    stype = SourceType.TARBALL
+    #version = '2.6.7'
+#     stype = SourceType.TARBALL
     btype = BuildType.MESON
-    url = 'https://github.com/%(name)s/%(name)s/releases/download/%(version)s/%(name)s-%(version)s.tar.xz'
-    tarball_checksum = '49e481d06cdff97bf68d99fa26bdf785331f411614485d892ea4c78eb479b218'
+#     url = 'https://github.com/%(name)s/%(name)s/releases/download/%(version)s/%(name)s-%(version)s.tar.xz'
+    version = '2.8.1'
+    stype = SourceType.GIT
+    remotes = {'origin': 'https://github.com/pascomnet/harfbuzz.git'}
+    commit = 'origin/2.8.1_pascom'
+#     tarball_checksum = '49e481d06cdff97bf68d99fa26bdf785331f411614485d892ea4c78eb479b218'
     licenses = [{License.BSD_like: ['COPYING']}]
     deps = ['fontconfig', 'cairo', 'glib']
     meson_options = {'icu': 'disabled',
@@ -20,7 +24,7 @@ class Recipe(recipe.Recipe):
                      'tests': 'disabled'}
 
     # https://github.com/harfbuzz/harfbuzz/pull/2458
-    patches = ['harfbuzz/0001-meson-Export-symbols-for-a-DLL-when-not-building-sta.patch']
+#     patches = ['harfbuzz/0001-meson-Export-symbols-for-a-DLL-when-not-building-sta.patch']
 
     files_bins = ['hb-ot-shape-closure', 'hb-view', 'hb-shape']
     files_libs = ['libharfbuzz']
