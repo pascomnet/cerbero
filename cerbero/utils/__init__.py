@@ -361,7 +361,7 @@ Terminating.''', file=sys.stderr)
         ver = pplatform.mac_ver()[0]
         if ver.startswith(('12.')):
             distro_version = DistroVersion.OS_X_MONTEREY
-        if ver.startswith(('12.', '11.', '10.16')):
+        elif ver.startswith(('11.', '10.16')):
             distro_version = DistroVersion.OS_X_BIG_SUR
         elif ver.startswith('10.15'):
             distro_version = DistroVersion.OS_X_CATALINA
