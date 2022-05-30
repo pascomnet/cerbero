@@ -169,7 +169,7 @@ def check_output(cmd, cmd_dir=None, fail=True, logfile=None, env=None, quiet=Fal
     try:
         o = subprocess.check_output(cmd, cwd=cmd_dir, env=env, stderr=stderr)
     except SUBPROCESS_EXCEPTIONS as e:
-        msg = getattr(e, 'output', '')
+        msg = getattr(e, 'output', '').decode(sys.stdout.encoding, errors='replace')
         if not fail:
             return msg
         if logfile:
@@ -181,17 +181,21 @@ def check_output(cmd, cmd_dir=None, fail=True, logfile=None, env=None, quiet=Fal
     return o
 
 
-def new_call(cmd, cmd_dir=None, fail=True, logfile=None, env=None, verbose=False):
+def new_call(cmd, cmd_dir=None, fail=True, logfile=None, env=None, verbose=False, interactive=False):
     cmd = _cmd_string_to_array(cmd, env)
     if logfile:
         logfile.write('Running command {!r}\n'.format(cmd))
         logfile.flush()
     if verbose:
         m.message('Running {!r}\n'.format(cmd))
+    if not interactive:
+        stdin = subprocess.DEVNULL
+    else:
+        stdin = None
     try:
         subprocess.check_call(cmd, cwd=cmd_dir, env=env,
                               stdout=logfile, stderr=subprocess.STDOUT,
-                              stdin=subprocess.DEVNULL)
+                              stdin=stdin)
     except SUBPROCESS_EXCEPTIONS as e:
         returncode = getattr(e, 'returncode', -1)
         if not fail:
@@ -382,6 +386,8 @@ async def download_urllib2(url, destination=None, check_cert=True, overwrite=Fal
     @param destination: destination where the file will be saved
     @type destination: str
     '''
+    # 1MiB chunk size (same as dot:giga for wget)
+    chunk_size = 1024 * 1024
     ctx = None
     if not check_cert:
         import ssl
@@ -392,12 +398,25 @@ async def download_urllib2(url, destination=None, check_cert=True, overwrite=Fal
     if not destination:
         destination = os.path.basename(url)
 
+    from datetime import datetime
+    start_time = datetime.now()
+
     try:
         with open(destination, 'wb') as d:
             req = urllib.request.Request(url)
             req.add_header('User-Agent', USER_AGENT)
-            f = urllib.request.urlopen(req, context=ctx)
-            d.write(f.read())
+            f = urllib.request.urlopen(req, timeout=20, context=ctx)
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                d.write(chunk)
+                print('.', end='', file=logfile, flush=True)
+            total_time = (datetime.now() - start_time).total_seconds()
+            size = d.tell() / 1024
+            speed = size / total_time
+            print('\nDownloaded {:2,.2f} KiB in {:2,.2f} seconds at {:2,.2f} KiB/s'
+                  .format(size, total_time, speed), file=logfile, flush=True)
     except urllib.error.HTTPError as e:
         if os.path.exists(destination):
             os.remove(destination)

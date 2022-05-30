@@ -58,6 +58,10 @@ class Recipe(recipe.Recipe):
         'glib/0001-gioerror-Map-WSAENETRESET-on-Windows-to-G_IO_ERROR_C.patch',
         # https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1836
         'glib/0001-Windows-fix-FD_READ-condition-flag-still-set-on-reco.patch',
+        # https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1428
+        'glib/0001-Add-missing-extern-to-the-dllexport-version-of-GLIB_.patch',
+        # https://gitlab.gnome.org/GNOME/glib/-/merge_requests/1698
+        'glib/0001-gslice-Inline-win32-implementation-of-g_getenv-to-av.patch',
     ]
 
     files_libs = [
@@ -174,6 +178,8 @@ class Recipe(recipe.Recipe):
                     'glib/uwp/0018-gio-Disable-win32-API-and-modules-when-unavailable-o.patch',
                     'glib/uwp/0019-TODO-gdbus-Completely-disable-when-building-for-WinR.patch',
                     'glib/uwp/0022-TODO-gio-gcontenttype-Needs-porting-to-WinRT-model.patch',
+                    # Visual Studio 2019 workaround
+                    'glib/uwp/0001-meson-Add-workaround-for-Visual-Studio-2019-ARM-buil.patch',
                 ]
         elif self.config.target_platform in [Platform.DARWIN, Platform.IOS]:
             self.files_devel.append(os.path.join('lib', 'glib-2.0', 'include', '*', 'glibconfig.h'))

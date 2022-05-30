@@ -247,7 +247,7 @@ Terminating.''', file=sys.stderr)
                 distro_version = DistroVersion.UBUNTU_DISCO
             elif distro_version in ['eoan']:
                 distro_version = DistroVersion.UBUNTU_EOAN
-            elif distro_version in ['focal', 'ulyana']:
+            elif distro_version in ['focal'] or (distro_version[0] == 'u' and d[1].startswith('20.')):
                 distro_version = DistroVersion.UBUNTU_FOCAL
             elif d[1].startswith('6.'):
                 distro_version = DistroVersion.DEBIAN_SQUEEZE
@@ -359,7 +359,9 @@ Terminating.''', file=sys.stderr)
     elif platform == Platform.DARWIN:
         distro = Distro.OS_X
         ver = pplatform.mac_ver()[0]
-        if ver.startswith(('11.', '10.16')):
+        if ver.startswith(('12.')):
+            distro_version = DistroVersion.OS_X_MONTEREY
+        elif ver.startswith(('11.', '10.16')):
             distro_version = DistroVersion.OS_X_BIG_SUR
         elif ver.startswith('10.15'):
             distro_version = DistroVersion.OS_X_CATALINA

@@ -21,6 +21,8 @@ import shutil
 import zipfile
 import tarfile
 import urllib.request, urllib.parse, urllib.error
+import collections
+import asyncio
 from hashlib import sha256
 
 from cerbero.config import Platform, DEFAULT_MIRRORS
@@ -302,6 +304,10 @@ class GitCache (Source):
 
     remotes = None
     commit = None
+    use_submodules = True
+
+    _fetch_locks = collections.defaultdict(asyncio.Lock)
+    _fetch_done = set()
 
     def __init__(self):
         Source.__init__(self)
@@ -322,8 +328,20 @@ class GitCache (Source):
                                      (self.config.git_root, self.name)
         self.repo_dir = os.path.join(self.config.local_sources, self.name)
         self._previous_env = None
+        # For forced commits in the config
+        self.commit = self.config.recipe_commit(self.name) or self.commit
+        self.remotes.update(self.config.recipes_remotes.get(self.name, {}))
 
     async def fetch(self, checkout=True):
+        # Could have multiple recipes using the same repo.
+        lock = self._fetch_locks[self.repo_dir]
+        async with lock:
+            if self.repo_dir in self._fetch_done:
+                return
+            await self.fetch_impl(checkout)
+            self._fetch_done.add(self.repo_dir)
+
+    async def fetch_impl(self, checkout):
         # First try to get the sources from the cached dir if there is one
         cached_dir = os.path.join(self.config.cached_sources,  self.name)
 
@@ -347,9 +365,9 @@ class GitCache (Source):
             if not self.offline:
                 await git.fetch(self.repo_dir, fail=False, logfile=get_logfile(self))
         if checkout:
-            commit = self.config.recipe_commit(self.name) or self.commit
-            await git.checkout(self.repo_dir, commit, logfile=get_logfile(self))
-            await git.submodules_update(self.repo_dir, cached_dir, fail=False, offline=self.offline, logfile=get_logfile(self))
+            await git.checkout(self.repo_dir, self.commit, logfile=get_logfile(self))
+            if self.use_submodules:
+                await git.submodules_update(self.repo_dir, cached_dir, fail=False, offline=self.offline, logfile=get_logfile(self))
 
 
     def built_version(self):
@@ -361,15 +379,25 @@ class Git (GitCache):
     Source handler for git repositories
     '''
 
+    _extract_locks = collections.defaultdict(asyncio.Lock)
+    _extract_done = set()
+
     def __init__(self):
         GitCache.__init__(self)
         if self.commit is None:
             # Used by recipes in recipes/toolchain/
             self.commit = 'origin/sdk-%s' % self.version
-        # For forced commits in the config
-        self.commit = self.config.recipe_commit(self.name) or self.commit
 
     async def extract(self):
+        # Could have multiple recipes using the same repo.
+        lock = self._extract_locks[self.config_src_dir]
+        async with lock:
+            if self.config_src_dir in self._extract_done:
+                return
+            await self.extract_impl()
+            self._extract_done.add(self.config_src_dir)
+
+    async def extract_impl(self):
         if os.path.exists(self.config_src_dir):
             try:
                 commit_hash = git.get_hash(self.repo_dir, self.commit, logfile=get_logfile(self))
@@ -383,7 +411,7 @@ class Git (GitCache):
             os.makedirs(self.config_src_dir)
 
         # checkout the current version
-        await git.local_checkout(self.config_src_dir, self.repo_dir, self.commit, logfile=get_logfile(self))
+        await git.local_checkout(self.config_src_dir, self.repo_dir, self.commit, logfile=get_logfile(self), use_submodules=self.use_submodules)
 
         for patch in self.patches:
             if not os.path.isabs(patch):

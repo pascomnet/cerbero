@@ -3,16 +3,16 @@ from cerbero.tools.libtool import LibtoolLibrary
 
 class Recipe(recipe.Recipe):
     name = 'ffmpeg'
-    version = '4.3.1'
+    version = '4.4'
     licenses = [License.LGPLv2_1Plus]
     stype = SourceType.TARBALL
     url = 'https://ffmpeg.org/releases/%(name)s-%(version)s.tar.xz'
-    tarball_checksum = 'ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb'
+    tarball_checksum = '06b10a183ce5371f915c6bb15b7b1fffbe046e8275099c96affc29e17645d909'
     patches = []
 
     btype = BuildType.MAKEFILE
     configure_tpl = './configure --prefix=%(prefix)s --libdir=%(libdir)s \
-        --ar="$AR" --as="$CC" --cc="$CC" --ld="$CC" --nm="$NM" --ranlib="$RANLIB" \
+        --ar="$AR" --as="$AS" --cc="$CC" --ld="$CC" --nm="$NM" --ranlib="$RANLIB" \
         --strip="$STRIP" --windres="$RC" \
         --enable-static --enable-pic --enable-shared \
         --disable-avdevice --disable-postproc --disable-swscale \
@@ -49,6 +49,7 @@ class Recipe(recipe.Recipe):
                 gas = self.get_env('GAS')
                 if gas:
                     self.set_env('AS', gas)
+                    self.set_env('ASFLAGS', self.get_env('CPPFLAGS'))
             else:
                 cc = self.get_env('CC')
                 if cc:
