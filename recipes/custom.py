@@ -37,7 +37,7 @@ class GStreamer(recipe.Recipe):
     if use_git:
         stype = SourceType.GIT
         remotes = {'origin': 'https://github.com/pascomnet/gstreamer.git'}
-        commit = 'origin/webrtc-simulcast-1_21'
+        commit = 'origin/webrtc-simulcast-1_22'
         # if int(version.split('.')[1]) % 2 == 0:
         #     # Even version, use the specific branch
         #     commit = 'origin/' + '.'.join(version.split('.')[0:2])
